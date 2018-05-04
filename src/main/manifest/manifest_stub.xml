@@ -1,0 +1,35 @@
+<export>
+    <info>
+        <creator>Admin</creator>
+        <opencms_version>10.5.3</opencms_version>
+        <createdate>Fri, 04 May 2018 08:31:46 GMT</createdate>
+        <infoproject>Offline</infoproject>
+        <export_version>7</export_version>
+    </info>
+    <module>
+        <name>com.sync.data</name>
+        <nicename><![CDATA[Sync Data]]></nicename>
+        <class>com.sync.data.init.OnInitMe</class>
+        <export-mode name="default"/>
+        <description><![CDATA[Sync Data]]></description>
+        <version>0.1</version>
+        <authorname><![CDATA[tuan.dna]]></authorname>
+        <authoremail><![CDATA[tuan.dna@sutrixsolutions.com]]></authoremail>
+        <datecreated/>
+        <userinstalled/>
+        <dateinstalled/>
+        <dependencies/>
+        <exportpoints>
+            <exportpoint uri="/system/modules/com.sync.data/classes/" destination="WEB-INF/classes/"/>
+        </exportpoints>
+        <resources>
+            <resource uri="/system/modules/com.sync.data/"/>
+        </resources>
+        <excluderesources/>
+        <parameters>
+            <param name="host">127.0.0.1</param>
+            <param name="port">1232</param>
+        </parameters>
+    </module>
+    <files/>
+</export>
