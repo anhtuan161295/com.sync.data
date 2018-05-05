@@ -1,7 +1,6 @@
 package com.sync.data.process;
 
 import com.sync.data.Constants;
-import com.sync.data.init.OnInitMe;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -12,75 +11,51 @@ import org.apache.juli.logging.LogFactory;
 import org.opencms.file.*;
 import org.opencms.file.types.CmsResourceTypeFolder;
 import org.opencms.file.types.I_CmsResourceType;
+import org.opencms.main.CmsException;
 import org.opencms.main.OpenCms;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.EOFException;
 import java.net.Socket;
 import java.util.List;
 import java.util.Objects;
 
-public class NewConnect extends Thread {
-  //	private static final Log log = CmsLog.getLog(NewConnect.class);
-//  private static final Logger log = LoggerFactory.getLogger(NewConnect.class);
-  private static final Log log = LogFactory.getLog(OnInitMe.class);
+public class ClientHandler implements Runnable {
+  private static final Log log = LogFactory.getLog(ClientHandler.class);
 
-
-  private DataInputStream input;
-  private DataOutputStream output;
-  private Socket clientSocket;
+  private Socket socket;
   private CmsObject cmso;
 
-
-  public NewConnect(Socket aClientSocket, CmsObject aCmso) {
+  public ClientHandler(Socket aSocket, CmsObject aCmsObject) {
     try {
-      clientSocket = aClientSocket;
-      input = new DataInputStream(clientSocket.getInputStream());
-      output = new DataOutputStream(clientSocket.getOutputStream());
-      cmso = aCmso;
-    } catch (IOException e) {
-      log.error("Error in getting new connection: " + e);
-    }
-  }
-
-  private byte[] readBytes() {
-    byte[] data = null;
-    try {
-      int len = input.readInt();
-      data = new byte[len];
-      if (len > 0) {
-        data = IOUtils.toByteArray(input);
-      }
+      socket = aSocket;
+      cmso = aCmsObject;
     } catch (Exception e) {
-      log.error("Error in read bytes: " + e);
+      log.error("Error in creating socket of ClientHandler: ", e);
     }
-
-    return data;
   }
 
   @Override
   public void run() {
-    log.info("Tui vua nhan duoc du lieu");
+    try (DataInputStream dis = new DataInputStream(socket.getInputStream())) {
+      // Wait for a message to arrive
+      byte[] bytes = readBytes(dis);
 
-    try {
-      byte[] bytes = readBytes();
       if (Objects.isNull(bytes)) {
         return;
       }
 
-      if (cmso.getRequestContext().getCurrentProject().isOnlineProject()) {
-        CmsProject offlineProject = cmso.readProject(Constants.OFFLINE);
-        cmso.getRequestContext().setCurrentProject(offlineProject);
-      }
+      log.info("Client data received");
 
       CmsResource resource = SerializationUtils.deserialize(bytes);
-      CmsFile file = null;
-
       if (!cmso.existsResource(resource.getRootPath())) {
         log.info("Resource not exist");
+        return;
       }
 
+      setProjectOffline();
+
+      CmsFile file = null;
       if (resource.isFile()) {
         file = cmso.readFile(resource);
       }
@@ -88,7 +63,6 @@ public class NewConnect extends Thread {
       List<CmsProperty> props = cmso.readPropertyObjects(resource, false);
       I_CmsResourceType resourceType = OpenCms.getResourceManager().getResourceType(resource.getTypeId());
 
-      String resourceName = StringUtils.EMPTY;
       String rootPath = resource.getRootPath();
       String[] resourceNames = StringUtils.split(rootPath, Constants.SLASH);
       String siteRoot = resourceNames[0];
@@ -96,7 +70,6 @@ public class NewConnect extends Thread {
       String[] siteNames = ArrayUtils.toArray(siteRoot, siteName);
 
       if (StringUtils.startsWith(rootPath, Constants.SITE_ROOT)) {
-
         // Remove sites and defaults
         String[] names = ArrayUtils.removeElements(resourceNames, siteRoot, siteName);
 
@@ -106,11 +79,7 @@ public class NewConnect extends Thread {
             String name = StringUtils.join(ArrayUtils.addAll(siteNames, subNames), Constants.SLASH);
 
             if (Objects.deepEquals(names, subNames)) {
-              if (resource.isFolder()) {
-                createFolder(name);
-              } else if (resource.isFile() && Objects.nonNull(file)) {
-                createResource(file, props, resourceType, name);
-              }
+              createFolderOrFile(resource, file, props, resourceType, name);
 
             } else if (!cmso.existsResource(name)) {
               createFolder(name);
@@ -119,29 +88,41 @@ public class NewConnect extends Thread {
 
         } else if (names.length == 1) {
           String name = rootPath;
-          if (resource.isFolder()) {
-            createFolder(name);
-          } else if (resource.isFile() && Objects.nonNull(file)) {
-            createResource(file, props, resourceType, name);
-          }
+          createFolderOrFile(resource, file, props, resourceType, name);
         }
       }
 
-      log.info("Sync data successfully : " + resource.getRootPath());
-
+      log.info("Sync data successfully : " + rootPath);
+    } catch (EOFException e) {
+      // Client disconnected cleanly
+      log.error("Client disconnected: ", e);
     } catch (Exception e) {
-      log.error("Error when read data : ", e);
+      log.error("Error in run method of ClientHandler : ", e);
     }
-
   }
 
-  private void createResource(CmsFile file, List<CmsProperty> props, I_CmsResourceType resourceType, String name) {
+  private void setProjectOffline() throws CmsException {
+    if (cmso.getRequestContext().getCurrentProject().isOnlineProject()) {
+      CmsProject offlineProject = cmso.readProject(Constants.OFFLINE);
+      cmso.getRequestContext().setCurrentProject(offlineProject);
+    }
+  }
+
+  private void createFolderOrFile(CmsResource resource, CmsFile file, List<CmsProperty> props, I_CmsResourceType resourceType, String name) {
+    if (resource.isFolder()) {
+      createFolder(name);
+    } else if (resource.isFile() && Objects.nonNull(file)) {
+      createFile(name, resourceType, file, props);
+    }
+  }
+
+  private void createFile(String name, I_CmsResourceType resourceType, CmsFile file, List<CmsProperty> props) {
     try {
       String newName = name + ".file." + RandomStringUtils.randomAlphabetic(5);
       CmsResource res = cmso.createResource(newName, resourceType, file.getContents(), props);
       cmso.writeResource(res);
       cmso.unlockResource(res);
-      OpenCms.getPublishManager().publishResource(cmso, newName);
+//      OpenCms.getPublishManager().publishResource(cmso, newName);
     } catch (Exception e) {
       log.error("Error in createResource method: ", e);
     }
@@ -154,9 +135,24 @@ public class NewConnect extends Thread {
       CmsResource folder = cmso.createResource(newName, folderType);
       cmso.writeResource(folder);
       cmso.unlockResource(folder);
-      OpenCms.getPublishManager().publishResource(cmso, newName);
+//      OpenCms.getPublishManager().publishResource(cmso, newName);
     } catch (Exception e) {
       log.error("Error in createFolder method: ", e);
     }
+  }
+
+  private byte[] readBytes(DataInputStream dis) {
+    byte[] data = null;
+    try {
+      int length = dis.readInt();
+      data = new byte[length];
+      if (length > 0) {
+        data = IOUtils.toByteArray(dis);
+      }
+    } catch (Exception e) {
+      log.error("Error in readBytes method of ClientHandler : ", e);
+    }
+
+    return data;
   }
 }
