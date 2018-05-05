@@ -1,5 +1,19 @@
 package com.sync.data.process;
 
+import com.sync.data.Constants;
+import com.sync.data.init.OnInitMe;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
+import org.opencms.file.*;
+import org.opencms.file.types.CmsResourceTypeFolder;
+import org.opencms.file.types.I_CmsResourceType;
+import org.opencms.main.OpenCms;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -7,134 +21,142 @@ import java.net.Socket;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.opencms.file.CmsFile;
-import org.opencms.file.CmsObject;
-import org.opencms.file.CmsProject;
-import org.opencms.file.CmsProperty;
-import org.opencms.file.CmsRequestContext;
-import org.opencms.file.CmsResource;
-import org.opencms.file.types.I_CmsResourceType;
-import org.opencms.main.CmsLog;
-import org.opencms.main.OpenCms;
-
-import com.sync.data.Constants;
-
 public class NewConnect extends Thread {
-	private static final Log log = CmsLog.getLog(NewConnect.class);
+  //	private static final Log log = CmsLog.getLog(NewConnect.class);
+//  private static final Logger log = LoggerFactory.getLogger(NewConnect.class);
+  private static final Log log = LogFactory.getLog(OnInitMe.class);
 
 
-	DataInputStream input;
-	DataOutputStream output;
-	Socket clientSocket;
-	CmsObject cmso;
+  private DataInputStream input;
+  private DataOutputStream output;
+  private Socket clientSocket;
+  private CmsObject cmso;
 
 
-	public NewConnect(Socket aClientSocket, CmsObject aCmso) {
-		try {
-			clientSocket = aClientSocket;
-			input = new DataInputStream(clientSocket.getInputStream());
-			output = new DataOutputStream(clientSocket.getOutputStream());
-			cmso = aCmso;
-		} catch (IOException e) {
-			log.error("Connection: " + e.getMessage());
-		}
-	}
+  public NewConnect(Socket aClientSocket, CmsObject aCmso) {
+    try {
+      clientSocket = aClientSocket;
+      input = new DataInputStream(clientSocket.getInputStream());
+      output = new DataOutputStream(clientSocket.getOutputStream());
+      cmso = aCmso;
+    } catch (IOException e) {
+      log.error("Error in getting new connection: " + e);
+    }
+  }
 
-	private byte[] readBytes() {
-		byte[] data = null;
-		try {
-			int len = input.readInt();
-			data = new byte[len];
-			if (len > 0) {
-				data = IOUtils.toByteArray(input);
-			}
-		} catch (Exception e) {
-			log.error("Error in read bytes: " + e.getMessage());
-		}
+  private byte[] readBytes() {
+    byte[] data = null;
+    try {
+      int len = input.readInt();
+      data = new byte[len];
+      if (len > 0) {
+        data = IOUtils.toByteArray(input);
+      }
+    } catch (Exception e) {
+      log.error("Error in read bytes: " + e);
+    }
 
-		return data;
-	}
+    return data;
+  }
 
-	@Override
-	public void run() {
-		System.out.println("Tui vua nhan duoc du lieu");
+  @Override
+  public void run() {
+    log.info("Tui vua nhan duoc du lieu");
 
-		try {
-			byte[] bytes = readBytes();
+    try {
+      byte[] bytes = readBytes();
+      if (Objects.isNull(bytes)) {
+        return;
+      }
 
+      if (cmso.getRequestContext().getCurrentProject().isOnlineProject()) {
+        CmsProject offlineProject = cmso.readProject(Constants.OFFLINE);
+        cmso.getRequestContext().setCurrentProject(offlineProject);
+      }
 
-			if (Objects.isNull(bytes)) {
-				return;
-			}
+      CmsResource resource = SerializationUtils.deserialize(bytes);
+      CmsFile file = null;
 
-			CmsRequestContext context = cmso.getRequestContext();
-			CmsProject currentProject = context.getCurrentProject();
-			if (currentProject.isOnlineProject()) {
-				CmsProject offlineProject = cmso.readProject(Constants.OFFLINE);
-				context.setCurrentProject(offlineProject);
-			}
+      if (!cmso.existsResource(resource.getRootPath())) {
+        log.info("Resource not exist");
+      }
 
-			CmsResource resource = SerializationUtils.deserialize(bytes);
-			CmsFile file = cmso.readFile(resource);
-			List<CmsProperty> props = cmso.readPropertyObjects(resource, false);
-			I_CmsResourceType resourceType = OpenCms.getResourceManager().getResourceType(resource.getTypeId());
+      if (resource.isFile()) {
+        file = cmso.readFile(resource);
+      }
 
-			String resourceName = StringUtils.EMPTY;
-			if (StringUtils.startsWith(resource.getName(), Constants.SITE_ROOT)) {
-				String[] names = StringUtils.split(resource.getName(), Constants.SLASH);
-				String siteName = names[1];
-				String[] paths = ArrayUtils.removeElements(names, names[0], names[1]);
+      List<CmsProperty> props = cmso.readPropertyObjects(resource, false);
+      I_CmsResourceType resourceType = OpenCms.getResourceManager().getResourceType(resource.getTypeId());
 
-				if(paths.length > 1){
+      String resourceName = StringUtils.EMPTY;
+      String rootPath = resource.getRootPath();
+      String[] resourceNames = StringUtils.split(rootPath, Constants.SLASH);
+      String siteRoot = resourceNames[0];
+      String siteName = resourceNames[1];
+      String[] siteNames = ArrayUtils.toArray(siteRoot, siteName);
 
-				}
+      if (StringUtils.startsWith(rootPath, Constants.SITE_ROOT)) {
 
+        // Remove sites and defaults
+        String[] names = ArrayUtils.removeElements(resourceNames, siteRoot, siteName);
 
-			}
+        if (names.length > 1) {
+          for (int i = 0; i < names.length; i++) {
+            String[] subNames = ArrayUtils.subarray(names, 0, i + 1);
+            String name = StringUtils.join(ArrayUtils.addAll(siteNames, subNames), Constants.SLASH);
 
+            if (Objects.deepEquals(names, subNames)) {
+              if (resource.isFolder()) {
+                createFolder(name);
+              } else if (resource.isFile() && Objects.nonNull(file)) {
+                createResource(file, props, resourceType, name);
+              }
 
-			CmsResource newResource = cmso.createResource("test", resourceType, file.getContents(), props);
-			cmso.writeResource(newResource);
-			cmso.unlockResource(newResource);
+            } else if (!cmso.existsResource(name)) {
+              createFolder(name);
+            }
+          }
 
-			System.out.println("Parse CmsResource success: " + newResource.getRootPath());
+        } else if (names.length == 1) {
+          String name = rootPath;
+          if (resource.isFolder()) {
+            createFolder(name);
+          } else if (resource.isFile() && Objects.nonNull(file)) {
+            createResource(file, props, resourceType, name);
+          }
+        }
+      }
 
-//			String resourceName = "test";
-//			I_CmsResourceType resourceType = OpenCms.getResourceManager().getResourceType(CmsResourceTypePlain.getStaticTypeName());
-//			List<CmsProperty> defaultProps = resourceType.getConfiguredDefaultProperties();
-//			CmsResource resource;
-//			CmsFile file;
-//
-//			if(cmso.existsResource(resourceName)){
-//				resource = cmso.readResource(resourceName);
-//			}else {
-//				resource = cmso.createResource(resourceName, resourceType, bytes, defaultProps);
-//			}
-//
-//			cmso.lockResource(resource);
-//			file = cmso.readFile(resource);
-//			file.setContents(bytes);
-//			cmso.writeFile(file);
-//			cmso.unlockResource(resource);
+      log.info("Sync data successfully : " + resource.getRootPath());
 
-			if (currentProject.isOnlineProject()) {
-				CmsProject onlineProject = cmso.readProject(Constants.ONLINE);
-				context.setCurrentProject(onlineProject);
-			}
+    } catch (Exception e) {
+      log.error("Error when read data : ", e);
+    }
 
-		} catch (Exception ex) {
-			log.error("Error when read data : " + ex.getMessage());
-		} finally {
-			try {
-				clientSocket.close();
-			} catch (IOException e) {
-				log.error("Can't close connect");
-			}
-		}
-	}
+  }
+
+  private void createResource(CmsFile file, List<CmsProperty> props, I_CmsResourceType resourceType, String name) {
+    try {
+      String newName = name + ".file." + RandomStringUtils.randomAlphabetic(5);
+      CmsResource res = cmso.createResource(newName, resourceType, file.getContents(), props);
+      cmso.writeResource(res);
+      cmso.unlockResource(res);
+      OpenCms.getPublishManager().publishResource(cmso, newName);
+    } catch (Exception e) {
+      log.error("Error in createResource method: ", e);
+    }
+  }
+
+  private void createFolder(String name) {
+    try {
+      String newName = name + ".folder." + RandomStringUtils.randomAlphabetic(5);
+      I_CmsResourceType folderType = OpenCms.getResourceManager().getResourceType(CmsResourceTypeFolder.getStaticTypeId());
+      CmsResource folder = cmso.createResource(newName, folderType);
+      cmso.writeResource(folder);
+      cmso.unlockResource(folder);
+      OpenCms.getPublishManager().publishResource(cmso, newName);
+    } catch (Exception e) {
+      log.error("Error in createFolder method: ", e);
+    }
+  }
 }

@@ -1,10 +1,10 @@
 <file>
     <destination>${destination}</destination>
     <type>folder</type>
-    <uuidstructure>c37ae227-4fb7-11e8-9b1c-204747a8cfd4</uuidstructure>
-    <datelastmodified>Fri, 04 May 2018 16:25:31 GMT</datelastmodified>
+    <uuidstructure>be9671eb-4fb7-11e8-9b1c-204747a8cfd4</uuidstructure>
+    <datelastmodified>Fri, 04 May 2018 16:25:23 GMT</datelastmodified>
     <userlastmodified>Admin</userlastmodified>
-    <datecreated>Fri, 04 May 2018 16:25:31 GMT</datecreated>
+    <datecreated>Fri, 04 May 2018 16:25:23 GMT</datecreated>
     <usercreated>Admin</usercreated>
     <flags>0</flags>
     <properties/>
@@ -14,7 +14,7 @@
             <uuidprincipal>ROLE.WORKPLACE_USER</uuidprincipal>
             <flags>514</flags>
             <permissionset>
-                <allowed>5</allowed>
+                <allowed>1</allowed>
                 <denied>0</denied>
             </permissionset>
         </accessentry>

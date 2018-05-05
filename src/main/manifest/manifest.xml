@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export>
+    <info>
+        <creator>Admin</creator>
+        <opencms_version>10.5.3</opencms_version>
+        <createdate>Fri, 04 May 2018 19:07:01 GMT</createdate>
+        <infoproject>Offline</infoproject>
+        <export_version>7</export_version>
+    </info>
+    <module>
+        <name>com.sync.data</name>
+        <nicename><![CDATA[Sync Data]]></nicename>
+        <class>com.sync.data.init.OnInitMe</class>
+        <export-mode name="default"/>
+        <description><![CDATA[Sync Data]]></description>
+        <version>0.1</version>
+        <authorname><![CDATA[tuan.dna]]></authorname>
+        <authoremail><![CDATA[tuan.dna@sutrixsolutions.com]]></authoremail>
+        <datecreated/>
+        <userinstalled/>
+        <dateinstalled/>
+        <dependencies/>
+        <exportpoints>
+            <exportpoint destination="WEB-INF/classes/" uri="/system/modules/com.sync.data/classes/"/>
+            <exportpoint destination="WEB-INF/lib/" uri="/system/modules/com.sync.data/lib/"/>
+        </exportpoints>
+        <resources>
+            <resource uri="/system/modules/com.sync.data/"/>
+        </resources>
+        <excluderesources/>
+        <parameters>
+            <param name="host">127.0.0.1</param>
+            <param name="port">1232</param>
+        </parameters>
+    </module>
+    <files>
+        <file>
+            <destination>system</destination>
+            <type>folder</type>
+            <uuidstructure>be9671eb-4fb7-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 16:25:23 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 16:25:23 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol>
+                <accessentry>
+                    <uuidprincipal>ROLE.WORKPLACE_USER</uuidprincipal>
+                    <flags>514</flags>
+                    <permissionset>
+                        <allowed>1</allowed>
+                        <denied>0</denied>
+                    </permissionset>
+                </accessentry>
+            </accesscontrol>
+        </file>
+        <file>
+            <destination>system/modules</destination>
+            <type>folder</type>
+            <uuidstructure>c37ae227-4fb7-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 16:25:31 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 16:25:31 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol>
+                <accessentry>
+                    <uuidprincipal>ROLE.WORKPLACE_USER</uuidprincipal>
+                    <flags>514</flags>
+                    <permissionset>
+                        <allowed>5</allowed>
+                        <denied>0</denied>
+                    </permissionset>
+                </accessentry>
+            </accesscontrol>
+        </file>
+        <file>
+            <destination>system/modules/com.sync.data</destination>
+            <type>folder</type>
+            <uuidstructure>6fdb416f-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 19:00:39 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:00:39 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+        <file>
+            <destination>system/modules/com.sync.data/classes</destination>
+            <type>folder</type>
+            <uuidstructure>6ff88d7b-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 19:00:40 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:00:40 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+        <file>
+            <destination>system/modules/com.sync.data/classes/com</destination>
+            <type>folder</type>
+            <uuidstructure>6ffbe8dd-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 19:00:40 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:00:40 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+        <file>
+            <destination>system/modules/com.sync.data/classes/com/sync</destination>
+            <type>folder</type>
+            <uuidstructure>6fff1d2f-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 19:00:40 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:00:40 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+        <file>
+            <destination>system/modules/com.sync.data/classes/com/sync/data</destination>
+            <type>folder</type>
+            <uuidstructure>70020361-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 19:00:40 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:00:40 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+        <file>
+            <destination>system/modules/com.sync.data/elements</destination>
+            <type>folder</type>
+            <uuidstructure>6fe6b323-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 19:00:39 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:00:39 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+        <file>
+            <destination>system/modules/com.sync.data/formatters</destination>
+            <type>folder</type>
+            <uuidstructure>6feb1ff5-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 19:00:39 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:00:39 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+        <file>
+            <destination>system/modules/com.sync.data/lib</destination>
+            <type>folder</type>
+            <uuidstructure>83d31a59-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 19:01:13 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:01:13 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+        <file>
+            <source>system/modules/com.sync.data/lib/com.sync.data-1.0-SNAPSHOT.jar</source>
+            <destination>system/modules/com.sync.data/lib/com.sync.data-1.0-SNAPSHOT.jar</destination>
+            <type>binary</type>
+            <uuidstructure>856c7f0b-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <uuidresource>856c7f0c-4fcd-11e8-9b1c-204747a8cfd4</uuidresource>
+            <datelastmodified>Fri, 04 May 2018 19:01:16 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:01:16 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+        <file>
+            <destination>system/modules/com.sync.data/resources</destination>
+            <type>folder</type>
+            <uuidstructure>6ff4e3f9-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 19:00:40 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:00:40 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+        <file>
+            <destination>system/modules/com.sync.data/schemas</destination>
+            <type>folder</type>
+            <uuidstructure>6ff07727-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 19:00:39 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:00:39 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+        <file>
+            <destination>system/modules/com.sync.data/templates</destination>
+            <type>folder</type>
+            <uuidstructure>6fe2bb81-4fcd-11e8-9b1c-204747a8cfd4</uuidstructure>
+            <datelastmodified>Fri, 04 May 2018 19:00:39 GMT</datelastmodified>
+            <userlastmodified>Admin</userlastmodified>
+            <datecreated>Fri, 04 May 2018 19:00:39 GMT</datecreated>
+            <usercreated>Admin</usercreated>
+            <flags>0</flags>
+            <properties/>
+            <relations/>
+            <accesscontrol/>
+        </file>
+    </files>
+</export>

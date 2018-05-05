@@ -2,7 +2,7 @@
     <info>
         <creator>Admin</creator>
         <opencms_version>10.5.3</opencms_version>
-        <createdate>Fri, 04 May 2018 08:31:46 GMT</createdate>
+        <createdate>Sat, 05 May 2018 04:42:09 GMT</createdate>
         <infoproject>Offline</infoproject>
         <export_version>7</export_version>
     </info>
@@ -21,6 +21,7 @@
         <dependencies/>
         <exportpoints>
             <exportpoint uri="/system/modules/com.sync.data/classes/" destination="WEB-INF/classes/"/>
+            <exportpoint uri="/system/modules/com.sync.data/lib/" destination="WEB-INF/lib/"/>
         </exportpoints>
         <resources>
             <resource uri="/system/modules/com.sync.data/"/>

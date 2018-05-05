@@ -1,0 +1,2 @@
+call mvn clean install
+xcopy /s/Y E:\Projects\OpenCms\com.sync.data\src\main\vfs\system\modules\com.sync.data\lib\com.sync.data-1.0-SNAPSHOT.jar E:\OpenCms\apache-tomcat-9.0.7\webapps\opencms\WEB-INF\lib
