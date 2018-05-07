@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 
 public class OnInitMe implements I_CmsModuleAction {
   private static final Log log = LogFactory.getLog(OnInitMe.class);
-  private ExecutorService executorService = Executors.newFixedThreadPool(1);
+  private ExecutorService executorService = null;
   private static Thread myServer = null;
 
   private ServerSocket socket;
@@ -39,7 +39,7 @@ public class OnInitMe implements I_CmsModuleAction {
   private void closeSocketServer() {
     try {
       if (Objects.nonNull(socket)) {
-        socket.close();
+        IOUtils.closeQuietly(socket);
       }
     } catch (Exception e) {
       log.error("Error in closeSocketServer method of OnInitMe : ", e);
@@ -49,6 +49,7 @@ public class OnInitMe implements I_CmsModuleAction {
   private void startListenerService() {
     try {
       closeSocketServer();
+      executorService = Executors.newFixedThreadPool(1);
       socket = new ServerSocket(Constants.SOCKET_PORT);
       log.info("Server start listening at port " + socket.getLocalPort());
       ListenerService listenerService = new ListenerService(socket, cmso);
@@ -109,10 +110,18 @@ public class OnInitMe implements I_CmsModuleAction {
 
   @Override
   public void moduleUpdate(CmsModule module) {
-    receptionIp = module.getParameter(Constants.HOST, StringUtils.EMPTY);
-    receptionPort = NumberUtils.toInt(module.getParameter(Constants.PORT, StringUtils.EMPTY), Constants.SOCKET_PORT);
-    log.info("Reception IP is " + receptionIp);
-    log.info("Reception PORT is " + receptionPort);
+    try {
+      receptionIp = module.getParameter(Constants.HOST, StringUtils.EMPTY);
+      receptionPort = NumberUtils.toInt(module.getParameter(Constants.PORT, StringUtils.EMPTY), Constants.SOCKET_PORT);
+      log.info("Reception IP is " + receptionIp);
+      log.info("Reception PORT is " + receptionPort);
+
+      closeListenerService();
+      closeSocketServer();
+      startListenerService();
+    }catch (Exception e){
+      log.error("Error in moduleUpdate method of OnInitMe : ", e);
+    }
   }
 
   private void sendBytes(byte[] myByteArray) {
