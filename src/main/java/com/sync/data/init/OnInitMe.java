@@ -17,43 +17,35 @@ import org.opencms.module.CmsModule;
 import org.opencms.module.I_CmsModuleAction;
 import org.opencms.report.I_CmsReport;
 
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class OnInitMe implements I_CmsModuleAction {
   private static final Log log = LogFactory.getLog(OnInitMe.class);
-  private ExecutorService executorService = null;
-  private static Thread myServer = null;
+  private ExecutorService executorService = Executors.newFixedThreadPool(1);
+  private ListenerService listenerService = null;
+  private Future future = null;
 
   private ServerSocket socket;
   private CmsObject cmso = null;
   private String receptionIp = null;
   private Integer receptionPort = null;
 
-  private void closeSocketServer() {
-    try {
-      if (Objects.nonNull(socket)) {
-        IOUtils.closeQuietly(socket);
-      }
-    } catch (Exception e) {
-      log.error("Error in closeSocketServer method of OnInitMe : ", e);
-    }
-  }
 
   private void startListenerService() {
     try {
       closeSocketServer();
-      executorService = Executors.newFixedThreadPool(1);
-      socket = new ServerSocket(Constants.SOCKET_PORT);
+      socket = new ServerSocket(receptionPort);
       log.info("Server start listening at port " + socket.getLocalPort());
-      ListenerService listenerService = new ListenerService(socket, cmso);
-      executorService.submit(listenerService);
+      listenerService = new ListenerService(socket, cmso);
+      future = executorService.submit(listenerService);
 
 //      myServer = new Thread(new Runnable() {
 //        @Override
@@ -85,8 +77,11 @@ public class OnInitMe implements I_CmsModuleAction {
 
   private void closeListenerService() {
     try {
-      if (Objects.nonNull(executorService)) {
-        executorService.shutdown();
+      if (Objects.nonNull(listenerService)) {
+        listenerService.setRunning(false);
+      }
+      if (Objects.nonNull(future)) {
+        future.cancel(true);
       }
     } catch (Exception e) {
       log.error("Error in closeListenerService method of OnInitMe : ", e);
@@ -98,10 +93,7 @@ public class OnInitMe implements I_CmsModuleAction {
   public void initialize(CmsObject adminCms, CmsConfigurationManager configurationManager, CmsModule module) {
     try {
       cmso = adminCms;
-      receptionIp = module.getParameter(Constants.HOST, StringUtils.EMPTY);
-      receptionPort = NumberUtils.toInt(module.getParameter(Constants.PORT, StringUtils.EMPTY), Constants.SOCKET_PORT);
-
-      startListenerService();
+      moduleUpdate(module);
     } catch (Exception e) {
       log.error("Error in initialize method of OnInitMe : ", e);
     }
@@ -119,7 +111,7 @@ public class OnInitMe implements I_CmsModuleAction {
       closeListenerService();
       closeSocketServer();
       startListenerService();
-    }catch (Exception e){
+    } catch (Exception e) {
       log.error("Error in moduleUpdate method of OnInitMe : ", e);
     }
   }
@@ -127,8 +119,8 @@ public class OnInitMe implements I_CmsModuleAction {
   private void sendBytes(byte[] myByteArray) {
     try {
       try (Socket clientSocket = new Socket(receptionIp, receptionPort);
-           OutputStream out = clientSocket.getOutputStream();
-           DataOutputStream dos = new DataOutputStream(out)) {
+           BufferedOutputStream bos = new BufferedOutputStream(clientSocket.getOutputStream());
+           DataOutputStream dos = new DataOutputStream(bos)) {
 
         int length = myByteArray.length;
         dos.writeInt(length);
@@ -173,5 +165,15 @@ public class OnInitMe implements I_CmsModuleAction {
   @Override
   public void cmsEvent(CmsEvent event) {
     // do nothing
+  }
+
+  private void closeSocketServer() {
+    try {
+      if (Objects.nonNull(socket)) {
+        IOUtils.closeQuietly(socket);
+      }
+    } catch (Exception e) {
+      log.error("Error in closeSocketServer method of OnInitMe : ", e);
+    }
   }
 }
