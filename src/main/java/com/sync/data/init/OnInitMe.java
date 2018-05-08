@@ -27,6 +27,7 @@ import org.opencms.module.I_CmsModuleAction;
 import org.opencms.report.I_CmsReport;
 
 import com.sync.data.Constants;
+import com.sync.data.models.Resource;
 import com.sync.data.process.ListenerService;
 
 public class OnInitMe implements I_CmsModuleAction {
@@ -99,6 +100,7 @@ public class OnInitMe implements I_CmsModuleAction {
 
 						int length = myByteArray.length;
 						dos.writeInt(length);
+						socketChannel.socket().setSendBufferSize(length);
 
 						if (length > 0) {
 							IOUtils.write(myByteArray, dos);
@@ -120,7 +122,14 @@ public class OnInitMe implements I_CmsModuleAction {
 			if (Objects.nonNull(publishList)) {
 				List<CmsResource> resources = publishList.getAllResources();
 				for (CmsResource resource : resources) {
-					byte[] contents = SerializationUtils.serialize(resource);
+					Resource res = new Resource();
+					res.setCmsResource(resource);
+
+					if (resource.isFile()) {
+						res.setCmsFile(cmso.readFile(resource));
+					}
+
+					byte[] contents = SerializationUtils.serialize(res);
 					sendBytes(contents);
 				}
 			}

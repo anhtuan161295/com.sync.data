@@ -21,7 +21,7 @@ import org.opencms.file.CmsObject;
 public class ListenerService implements Runnable {
 	private static final Log log = LogFactory.getLog(ListenerService.class);
 
-	private static ExecutorService executorService = Executors.newFixedThreadPool(1);
+	private ExecutorService executorService = Executors.newFixedThreadPool(1);
 
 	private CmsObject cmso;
 	private boolean isRunning = true;
@@ -88,12 +88,12 @@ public class ListenerService implements Runnable {
 
 						// if readable then the server is ready to read
 						if (key.isReadable()) {
-							SocketChannel client = (SocketChannel) key.channel();
+							SocketChannel clientChannel = (SocketChannel) key.channel();
 
 							// Read byte coming from the client
-							ByteBuffer buffer = ByteBuffer.allocate(1024);
+							ByteBuffer buffer = ByteBuffer.allocate(clientChannel.socket().getSendBufferSize());
 
-							client.read(buffer);
+							clientChannel.read(buffer);
 
 							ClientHandler handler = new ClientHandler(buffer.array(), cmso);
 							Future future = executorService.submit(handler);

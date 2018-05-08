@@ -24,16 +24,17 @@ import org.opencms.file.types.I_CmsResourceType;
 import org.opencms.main.OpenCms;
 
 import com.sync.data.Constants;
+import com.sync.data.models.Resource;
 
 public class ClientHandler implements Runnable {
 	private static final Log log = LogFactory.getLog(ClientHandler.class);
 
 	private CmsObject cmso;
-	private byte[] bytes;
+	private byte[] data;
 
 	public ClientHandler(byte[] aBytes, CmsObject aCmsObject) {
 		try {
-			bytes = aBytes;
+			data = aBytes;
 			cmso = aCmsObject;
 		} catch (Exception e) {
 			log.error("Error in creating socket of ClientHandler: ", e);
@@ -45,7 +46,7 @@ public class ClientHandler implements Runnable {
 		CmsProject currentProject = cmso.getRequestContext().getCurrentProject();
 
 		try {
-			try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+			try (ByteArrayInputStream bais = new ByteArrayInputStream(data);
 					 BufferedInputStream bis = new BufferedInputStream(bais);
 					 DataInputStream dis = new DataInputStream(bis)) {
 
@@ -58,13 +59,14 @@ public class ClientHandler implements Runnable {
 
 				log.info("Client data received");
 
-				CmsResource resource = SerializationUtils.deserialize(bytes);
+				Resource res = SerializationUtils.deserialize(bytes);
+				CmsResource resource = res.getCmsResource();
 
 				setProjectOffline();
 
 				CmsFile file = null;
 				if (resource.isFile()) {
-					file = cmso.readFile(resource);
+					file = res.getCmsFile();
 				}
 
 				List<CmsProperty> props = cmso.readPropertyObjects(resource, false);
@@ -159,17 +161,17 @@ public class ClientHandler implements Runnable {
 	}
 
 	private byte[] readBytes(DataInputStream dis) {
-		byte[] data = null;
+		byte[] bytes = null;
 		try {
 			int length = dis.readInt();
-			data = new byte[length];
+			bytes = new byte[length];
 			if (length > 0) {
-				data = IOUtils.toByteArray(dis, length);
+				bytes = IOUtils.toByteArray(dis, length);
 			}
 		} catch (Exception e) {
 			log.error("Error in readBytes method of ClientHandler : ", e);
 		}
 
-		return data;
+		return bytes;
 	}
 }
