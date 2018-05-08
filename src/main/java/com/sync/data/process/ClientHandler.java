@@ -50,7 +50,6 @@ public class ClientHandler implements Runnable {
 					 BufferedInputStream bis = new BufferedInputStream(bais);
 					 DataInputStream dis = new DataInputStream(bis)) {
 
-				// Wait for a message to arrive
 				byte[] bytes = readBytes(dis);
 
 				if (Objects.isNull(bytes)) {

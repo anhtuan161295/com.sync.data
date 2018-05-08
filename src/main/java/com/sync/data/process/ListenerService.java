@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
@@ -50,10 +49,8 @@ public class ListenerService implements Runnable {
 				serverSocketChannel.bind(hostAddress);
 				serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 
-				log.info("ListenerService: waiting for new clients");
-
 				while (isRunning) {
-					int readyCount = selector.selectNow();
+					int readyCount = selector.select();
 					if (readyCount == 0) {
 						continue;
 					}
@@ -96,16 +93,7 @@ public class ListenerService implements Runnable {
 							clientChannel.read(buffer);
 
 							ClientHandler handler = new ClientHandler(buffer.array(), cmso);
-							Future future = executorService.submit(handler);
-
-							if (!future.isDone()) {
-								log.info("Processing client data");
-								future.get();
-							}
-
-							if (future.isDone()) {
-								log.info("Client data processing is done");
-							}
+							executorService.submit(handler);
 
 							// Close channel and key
 							key.channel().close();
