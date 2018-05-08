@@ -2,7 +2,7 @@
     <info>
         <creator>Admin</creator>
         <opencms_version>10.5.3</opencms_version>
-        <createdate>Mon, 07 May 2018 09:55:43 GMT</createdate>
+        <createdate>Tue, 08 May 2018 11:09:38 GMT</createdate>
         <infoproject>Offline</infoproject>
         <export_version>7</export_version>
     </info>
@@ -28,8 +28,8 @@
         </resources>
         <excluderesources/>
         <parameters>
-            <param name="host">127.0.0.1</param>
-            <param name="port">1232</param>
+            <param name="host">10.0.1.46</param>
+            <param name="port">1111</param>
         </parameters>
     </module>
     <files/>
