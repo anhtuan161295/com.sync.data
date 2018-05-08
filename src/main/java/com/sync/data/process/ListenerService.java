@@ -44,6 +44,7 @@ public class ListenerService implements Runnable {
 
 				serverSocketChannel.configureBlocking(false);
 
+				// Use wildcard address (0.0.0.0) to accept all address
 				InetSocketAddress hostAddress = new InetSocketAddress(port);
 				// retrieve server socket and bind to port
 				serverSocketChannel.bind(hostAddress);
