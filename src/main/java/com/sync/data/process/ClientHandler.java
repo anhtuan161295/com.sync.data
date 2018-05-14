@@ -9,7 +9,6 @@ import java.util.Objects;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.juli.logging.Log;
@@ -85,11 +84,15 @@ public class ClientHandler implements Runnable {
 						String[] subNames = ArrayUtils.subarray(names, 0, i + 1);
 						String name = StringUtils.join(ArrayUtils.addAll(siteNames, subNames), Constants.SLASH);
 
+						if(!StringUtils.startsWith(name, Constants.SLASH)){
+							name = StringUtils.join(Constants.SLASH, name);
+						}
+
 						if (Objects.deepEquals(names, subNames)) {
 							createFolderOrFile(resource, file, props, resourceType, name);
 
 						} else if (!cmso.existsResource(name)) {
-							createFolder(name);
+							createFolder(name, props);
 						}
 					}
 
@@ -108,7 +111,7 @@ public class ClientHandler implements Runnable {
 			log.error("Error in run method of ClientHandler : ", e);
 		} finally {
 			try {
-				cmso.getRequestContext().setCurrentProject(currentProject);
+//				cmso.getRequestContext().setCurrentProject(currentProject);
 			} catch (Exception e) {
 				log.error("Error in setting current project to previous mode : ", e);
 			}
@@ -128,7 +131,7 @@ public class ClientHandler implements Runnable {
 
 	private void createFolderOrFile(CmsResource resource, CmsFile file, List<CmsProperty> props, I_CmsResourceType resourceType, String name) {
 		if (resource.isFolder()) {
-			createFolder(name);
+			createFolder(name, props);
 		} else if (resource.isFile() && Objects.nonNull(file)) {
 			createFile(name, resourceType, file, props);
 		}
@@ -136,24 +139,28 @@ public class ClientHandler implements Runnable {
 
 	private void createFile(String name, I_CmsResourceType resourceType, CmsFile file, List<CmsProperty> props) {
 		try {
-			String newName = name + ".file." + RandomStringUtils.randomAlphabetic(5);
-			CmsResource res = cmso.createResource(name, resourceType, file.getContents(), props);
-			cmso.writeResource(res);
-			cmso.unlockResource(res);
-//      OpenCms.getPublishManager().publishResource(cmso, newName);
+
+			if (!cmso.existsResource(name)) {
+				CmsResource res = cmso.createResource(name, resourceType, file.getContents(), props);
+				cmso.writeResource(res);
+				cmso.unlockResource(res);
+			}
+
 		} catch (Exception e) {
 			log.error("Error in createResource method: ", e);
 		}
 	}
 
-	private void createFolder(String name) {
+	private void createFolder(String name, List<CmsProperty> props) {
 		try {
-			String newName = name + ".folder." + RandomStringUtils.randomAlphabetic(5);
 			I_CmsResourceType folderType = OpenCms.getResourceManager().getResourceType(CmsResourceTypeFolder.getStaticTypeId());
-			CmsResource folder = cmso.createResource(name, folderType);
-			cmso.writeResource(folder);
-			cmso.unlockResource(folder);
-//      OpenCms.getPublishManager().publishResource(cmso, newName);
+
+			if (!cmso.existsResource(name)) {
+				CmsResource folder = cmso.createResource(name, folderType);
+				cmso.writeResource(folder);
+				cmso.unlockResource(folder);
+			}
+
 		} catch (Exception e) {
 			log.error("Error in createFolder method: ", e);
 		}

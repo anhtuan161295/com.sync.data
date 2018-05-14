@@ -122,15 +122,19 @@ public class OnInitMe implements I_CmsModuleAction {
 			if (Objects.nonNull(publishList)) {
 				List<CmsResource> resources = publishList.getAllResources();
 				for (CmsResource resource : resources) {
-					Resource res = new Resource();
-					res.setCmsResource(resource);
 
-					if (resource.isFile()) {
-						res.setCmsFile(cmso.readFile(resource));
+					if (cmso.existsResource(resource.getName())) {
+						Resource res = new Resource();
+						res.setCmsResource(resource);
+
+						if (resource.isFile()) {
+							res.setCmsFile(cmso.readFile(resource));
+						}
+
+						byte[] contents = SerializationUtils.serialize(res);
+						sendBytes(contents);
 					}
 
-					byte[] contents = SerializationUtils.serialize(res);
-					sendBytes(contents);
 				}
 			}
 		} catch (Exception e) {
